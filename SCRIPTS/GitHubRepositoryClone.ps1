@@ -61,9 +61,8 @@ if (-not ((Test-Path "$Projects\GlobalSettings") -or (Test-Path "$ModulePath\Ale
     }
 }
 $Global:ScriptInvocation = $MyInvocation
-$GlobalSettingsPath      = "C:\Users\Alex\Documents\PROJECTS\GlobalSettings"
-$InitScript              = "$GlobalSettingsPath\SCRIPTS\Init.ps1"
-. "$InitScript" -MyScriptRoot (Split-Path $PSCommandPath -Parent) -InitGlobal $InitGlobal -InitLocal $InitLocal
+$GlobalSettingsPath      = "C:\DATA\Projects\GlobalSettings"
+if ($env:AlexKFrameworkInitScript){. "$env:AlexKFrameworkInitScript" -MyScriptRoot (Split-Path $PSCommandPath -Parent) -InitGlobal $InitGlobal -InitLocal $InitLocal} Else {Write-host "Environmental variable [AlexKFrameworkInitScript] does not exist!" -ForegroundColor Red; exit 1}
 if ($LastExitCode) { exit 1 }
 
 # Error trap
@@ -87,8 +86,8 @@ if ( (-not $res) -and (-not (Get-Module -FullyQualifiedName PowerShellForGitHub)
     Set-GitHubAuthentication
     $Res = Import-Module PowerShellForGitHub -PassThru
 }
-if (-not $res) {
-    Add-ToLog -Message "Module [PowerShellForGitHub] import unsuccessful!" -Display -Status "Error" -logFilePath $ScriptLogFilePath
+if (-not $Res) {
+    Add-ToLog -Message "Module [PowerShellForGitHub] import unsuccessful!" -Display -Status "Error" -logFilePath $ScriptLogFilePath 
     exit 1
 }
 Else {
