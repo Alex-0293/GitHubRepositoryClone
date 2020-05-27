@@ -61,7 +61,7 @@ if (-not ((Test-Path "$Projects\GlobalSettings") -or (Test-Path "$ModulePath\Ale
     }
 }
 $Global:ScriptInvocation = $MyInvocation
-$GlobalSettingsPath      = "C:\DATA\Projects\GlobalSettings"
+$GlobalSettingsPath      = "C:\Users\Alex\Documents\PROJECTS\GlobalSettings"
 $InitScript              = "$GlobalSettingsPath\SCRIPTS\Init.ps1"
 . "$InitScript" -MyScriptRoot (Split-Path $PSCommandPath -Parent) -InitGlobal $InitGlobal -InitLocal $InitLocal
 if ($LastExitCode) { exit 1 }
@@ -81,6 +81,12 @@ trap {
 ################################# Script start here #################################
 
 $Res = Import-Module PowerShellForGitHub -PassThru
+if ( (-not $res) -and (-not (Get-Module -FullyQualifiedName PowerShellForGitHub)) ) {
+    Add-ToLog -Message "Installing module [PowerShellForGitHub]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
+    Install-Module -Name PowerShellForGitHub
+    Set-GitHubAuthentication
+    $Res = Import-Module PowerShellForGitHub -PassThru
+}
 if (-not $res) {
     Add-ToLog -Message "Module [PowerShellForGitHub] import unsuccessful!" -Display -Status "Error" -logFilePath $ScriptLogFilePath
     exit 1
