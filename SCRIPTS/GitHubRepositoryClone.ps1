@@ -62,7 +62,12 @@ if (-not ((Test-Path "$Projects\GlobalSettings") -or (Test-Path "$ModulePath\Ale
 }
 $Global:ScriptInvocation = $MyInvocation
 $GlobalSettingsPath      = "C:\DATA\Projects\GlobalSettings"
-if ($env:AlexKFrameworkInitScript){. "$env:AlexKFrameworkInitScript" -MyScriptRoot (Split-Path $PSCommandPath -Parent) -InitGlobal $InitGlobal -InitLocal $InitLocal} Else {Write-host "Environmental variable [AlexKFrameworkInitScript] does not exist!" -ForegroundColor Red; exit 1}
+if ($env:AlexKFrameworkInitScript){
+    . "$env:AlexKFrameworkInitScript" -MyScriptRoot (Split-Path $PSCommandPath -Parent) -InitGlobal $InitGlobal -InitLocal $InitLocal
+} Else {
+    Write-host "Environmental variable [AlexKFrameworkInitScript] does not exist!" -ForegroundColor Red
+     exit 1
+}
 if ($LastExitCode) { exit 1 }
 
 # Error trap
@@ -118,17 +123,23 @@ foreach ($Item in $Res) {
 
   
 $Answer = $Res |Where-Object {$_.exist -eq $false} | Select-Object id, name, exist, private, description, fork, created_at, updated_at, size, stargazers_count, watchers_count, language, forks_count, archived, disabled, license, clone_url | Out-GridView -Title "Select projects for clone locally." -PassThru
-
+$Projects = $Global:SearchProjectsPath | Out-GridView  -Title "Select destination folder." -OutputMode Single
+if (-not (Test-Path $Projects) ){
+    Add-ToLog -Message "Path [$Projects] does not exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath 
+    exit 1
+}
 if ($Answer){
     $Answer | Select-Object id, name, private, clone_url | Format-Table -AutoSize
     foreach ($item in $Answer){
         if (Test-Path "$Projects\$($item.name)") {
-            Add-ToLog -Message "Repository [$($item.name)] cloning unsuccessful, path already exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath
+            Add-ToLog -Message "Repository [$($item.name)] cloning unsuccessful, path already exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath            
         }
         else {
             Add-ToLog -Message "Cloning repository [$($item.name)]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
             Set-Location $Projects
             & git.exe clone $item.clone_url
+            Add-ToLog -Message "Copying empty settings file [$Projects\$($item.name)\$SETTINGSFolder\$EmptySettingsFile] to [$Projects\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
+            Copy-Item -path "$Projects\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Destination "$Projects\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile"
         }
     }
 }
