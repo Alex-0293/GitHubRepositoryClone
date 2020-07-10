@@ -30,38 +30,7 @@ Param (
     [bool] $InitLocal = $true   
 )
 
-. "$(Split-Path (Split-Path $MyInvocation.MyCommand.path -Parent) -parent)\SETTINGS\Settings.ps1"
-if (-not ((Test-Path "$Projects\GlobalSettings") -or (Test-Path "$ModulePath\AlexkUtils")) ) {
-    $Answer = ""
-    while ( ($Answer.ToUpper() -ne "Y") -and ($Answer.ToUpper() -ne "n")) {
-        $Answer = Read-Host -Prompt "Do you want to install AlexKUtils module and Global settings? [y/N]" 
-        if ($Answer -eq "") { $Answer = "N"}
-        switch ($Answer.ToUpper()) {
-            "Y" { 
-                # Check GlobalSettings repository existence
-                If (Test-Path "$Projects\GlobalSettings") {
-                    Write-Host "Global settings path [$Projects\GlobalSettings] already exist!" -ForegroundColor Red
-                }
-                Else {
-                    Set-Location $Projects
-                    & git.exe clone $GlobalSettingsURL                
-                }
-                # Check AlexkUtils module existence
-                If (Test-Path "$ModulePath\AlexkUtils") {
-                    Write-Host "AlexkUtils module path [$ModulePath\AlexkUtils] already exist!" -ForegroundColor Red
-                }
-                Else {
-                    Set-Location $ModulePath
-                    & git.exe clone $AlexKUtilsModuleURL                
-                }
-            }
-            "N" { }
-            Default { }
-        }
-    }
-}
 $Global:ScriptInvocation = $MyInvocation
-$GlobalSettingsPath      = "C:\DATA\Projects\GlobalSettings"
 if ($env:AlexKFrameworkInitScript){
     . "$env:AlexKFrameworkInitScript" -MyScriptRoot (Split-Path $PSCommandPath -Parent) -InitGlobal $InitGlobal -InitLocal $InitLocal
 } Else {
@@ -75,7 +44,7 @@ trap {
     if (get-module -FullyQualifiedName AlexkUtils) {
         Get-ErrorReporting $_
 
-        . "$GlobalSettings\$SCRIPTSFolder\Finish.ps1" 
+        . "$GlobalSettingsPath\$SCRIPTSFolder\Finish.ps1" 
     }
     Else {
         Write-Host "[$($MyInvocation.MyCommand.path)] There is error before logging initialized. Error: $_" -ForegroundColor Red
@@ -87,7 +56,7 @@ trap {
 $Res = Import-Module PowerShellForGitHub -PassThru
 if ( (-not $res) -and (-not (Get-Module -FullyQualifiedName PowerShellForGitHub)) ) {
     Add-ToLog -Message "Installing module [PowerShellForGitHub]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
-    Install-Module -Name PowerShellForGitHub
+    gsudo Install-Module -Name PowerShellForGitHub
     Set-GitHubAuthentication
     $Res = Import-Module PowerShellForGitHub -PassThru
 }
@@ -123,26 +92,27 @@ foreach ($Item in $Res) {
 
   
 $Answer = $Res |Where-Object {$_.exist -eq $false} | Select-Object id, name, exist, private, description, fork, created_at, updated_at, size, stargazers_count, watchers_count, language, forks_count, archived, disabled, license, clone_url | Out-GridView -Title "Select projects for clone locally." -PassThru
-$Projects = $Global:SearchProjectsPath | Out-GridView  -Title "Select destination folder." -OutputMode Single
-if (-not (Test-Path $Projects) ){
-    Add-ToLog -Message "Path [$Projects] does not exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath 
+$Global:ProjectsFolderPath = $Global:SearchProjectsPath | Out-GridView  -Title "Select destination folder." -OutputMode Single
+if (-not (Test-Path $($Global:ProjectsFolderPath)) ){
+    Add-ToLog -Message "Path [$($Global:ProjectsFolderPath)] does not exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath 
     exit 1
 }
 if ($Answer){
     $Answer | Select-Object id, name, private, clone_url | Format-Table -AutoSize
     foreach ($item in $Answer){
-        if (Test-Path "$Projects\$($item.name)") {
+        if (Test-Path "$($Global:ProjectsFolderPath)\$($item.name)") {
             Add-ToLog -Message "Repository [$($item.name)] cloning unsuccessful, path already exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath            
         }
         else {
             Add-ToLog -Message "Cloning repository [$($item.name)]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
-            Set-Location $Projects
+            Set-Location $($Global:ProjectsFolderPath)
             & git.exe clone $item.clone_url
-            Add-ToLog -Message "Copying empty settings file [$Projects\$($item.name)\$SETTINGSFolder\$EmptySettingsFile] to [$Projects\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
-            Copy-Item -path "$Projects\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Destination "$Projects\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile"
+            Add-ToLog -Message "Copying empty settings file [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile] to [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
+            Copy-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Destination "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile"
+            Remove-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Force
         }
     }
 }
 
 ################################# Script end here ###################################
-. "$GlobalSettings\$SCRIPTSFolder\Finish.ps1"
+. "$GlobalSettingsPath\$SCRIPTSFolder\Finish.ps1"
