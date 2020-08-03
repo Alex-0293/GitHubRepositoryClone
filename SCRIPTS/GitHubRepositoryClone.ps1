@@ -107,9 +107,11 @@ if ($Answer){
             Add-ToLog -Message "Cloning repository [$($item.name)]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
             Set-Location $($Global:ProjectsFolderPath)
             & git.exe clone $item.clone_url
-            Add-ToLog -Message "Copying empty settings file [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile] to [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
-            Copy-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Destination "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile"
-            Remove-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Force
+            if ( Test-Path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile") {
+                Add-ToLog -Message "Copying empty settings file [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile] to [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
+                Copy-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Destination "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile"
+                Remove-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Force
+            }
         }
     }
 }
