@@ -1,10 +1,12 @@
 # Rename this file to Settings.ps1
+######################### value replacement #####################
+
 ######################### no replacement ########################
 [array]  $global:FoldersToIgnoreName = @(".vscode")  
 [string] $Global:ModulePath          = "C:\Program Files\WindowsPowerShell\Modules"
 [string] $Global:GlobalSettingsURL   = "https://github.com/Alex-0293/GlobalSettings"
-[string] $Global:AlexKUtilsModuleURL = "https://github.com/Alex-0293/AlexKUtils"
-[array]  $Global:SearchProjectsPath  = $Global:WorkFolderList 
+[string] $Global:AlexKUtilsModuleURL = "https://github.com/Alex-0293/PS-Modules"
+[array]  $Global:SearchProjectsPath = @($Global:ProjectsFolderPath, $ModulePath, $Global:ProjectServicesFolderPath, $Global:OtherProjectsFolderPath)  
 
 [bool]  $Global:LocalSettingsSuccessfullyLoaded  = $true
 # Error trap
