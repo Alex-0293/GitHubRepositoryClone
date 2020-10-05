@@ -1,9 +1,9 @@
-﻿<#
-    .NOTE
-        .AUTHOR AlexK (1928311@tuta.io)
-        .DATE   25.05.2020
-        .VER    1
-        .LANG   En
+<#
+    .NOTES
+        AUTHOR AlexK (1928311@tuta.io)
+        DATE   25.05.2020
+        VER    1
+        LANG   En
         
     .LINK
         https://github.com/Alex-0293/GitProjectClone.git
@@ -17,7 +17,7 @@
     .DESCRIPTION
         Project to clone multiple projects from github account. 
 
-    .PARAMETER
+    
 
     .EXAMPLE
         GitProjectClone.ps1
@@ -44,7 +44,7 @@ trap {
     if (get-module -FullyQualifiedName AlexkUtils) {
         Get-ErrorReporting $_
 
-        . "$GlobalSettingsPath\$SCRIPTSFolder\Finish.ps1" 
+        . "$($Global:gsGlobalSettingsPath)\$($Global:gsSCRIPTSFolder)\Finish.ps1" 
     }
     Else {
         Write-Host "[$($MyInvocation.MyCommand.path)] There is error before logging initialized. Error: $_" -ForegroundColor Red
@@ -55,13 +55,13 @@ trap {
 
 $Res = Import-Module PowerShellForGitHub -PassThru
 if ( (-not $res) -and (-not (Get-Module -FullyQualifiedName PowerShellForGitHub)) ) {
-    Add-ToLog -Message "Installing module [PowerShellForGitHub]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
+    Add-ToLog -Message "Installing module [PowerShellForGitHub]." -Display -Status "Info" -logFilePath $Global:gsScriptLogFilePath
     gsudo Install-Module -Name PowerShellForGitHub
     Set-GitHubAuthentication
     $Res = Import-Module PowerShellForGitHub -PassThru
 }
 if (-not $Res) {
-    Add-ToLog -Message "Module [PowerShellForGitHub] import unsuccessful!" -Display -Status "Error" -logFilePath $ScriptLogFilePath 
+    Add-ToLog -Message "Module [PowerShellForGitHub] import unsuccessful!" -Display -Status "Error" -logFilePath $Global:gsScriptLogFilePath 
     exit 1
 }
 Else {
@@ -92,29 +92,29 @@ foreach ($Item in $Res) {
 
   
 $Answer = $Res |Where-Object {$_.exist -eq $false} | Select-Object id, name, exist, private, description, fork, created_at, updated_at, size, stargazers_count, watchers_count, language, forks_count, archived, disabled, license, clone_url | Out-GridView -Title "Select projects for clone locally." -PassThru
-$Global:ProjectsFolderPath = $Global:SearchProjectsPath | Out-GridView  -Title "Select destination folder." -OutputMode Single
-if (-not (Test-Path $($Global:ProjectsFolderPath)) ){
-    Add-ToLog -Message "Path [$($Global:ProjectsFolderPath)] does not exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath 
-    exit 1
-}
-if ($Answer){
+if ($Answer) {
+    $Global:gsProjectsFolderPath = $Global:SearchProjectsPath | Out-GridView  -Title "Select destination folder." -OutputMode Single
+    if (-not (Test-Path $($Global:gsProjectsFolderPath)) ){
+        Add-ToLog -Message "Path [$($($Global:gsProjectsFolderPath))] does not exist!" -Display -Status "Error" -logFilePath $Global:gsScriptLogFilePath 
+        exit 1
+    }
     $Answer | Select-Object id, name, private, clone_url | Format-Table -AutoSize
     foreach ($item in $Answer){
-        if (Test-Path "$($Global:ProjectsFolderPath)\$($item.name)") {
-            Add-ToLog -Message "Repository [$($item.name)] cloning unsuccessful, path already exist!" -Display -Status "Error" -logFilePath $ScriptLogFilePath            
+        if (Test-Path "$($($Global:gsProjectsFolderPath))\$($item.name)") {
+            Add-ToLog -Message "Repository [$($item.name)] cloning unsuccessful, path already exist!" -Display -Status "Error" -logFilePath $Global:gsScriptLogFilePath            
         }
         else {
-            Add-ToLog -Message "Cloning repository [$($item.name)]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
-            Set-Location $($Global:ProjectsFolderPath)
+            Add-ToLog -Message "Cloning repository [$($item.name)]." -Display -Status "Info" -logFilePath $Global:gsScriptLogFilePath
+            Set-Location $($Global:gsProjectsFolderPath)
             & git.exe clone $item.clone_url
-            if ( Test-Path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile") {
-                Add-ToLog -Message "Copying empty settings file [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile] to [$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile]." -Display -Status "Info" -logFilePath $ScriptLogFilePath
-                Copy-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Destination "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$DefaultSettingsFile"
-                Remove-Item -path "$($Global:ProjectsFolderPath)\$($item.name)\$SETTINGSFolder\$EmptySettingsFile" -Force
+            if ( Test-Path "$($($Global:gsProjectsFolderPath))\$($item.name)\$Global:gsSETTINGSFolder\$EmptySettingsFile") {
+                Add-ToLog -Message "Copying empty settings file [$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsEmptySettingsFile)] to [$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsDefaultSettingsFile)]." -Display -Status "Info" -logFilePath $Global:gsScriptLogFilePath
+                Copy-Item -path "$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$EmptySettingsFile" -Destination "$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$DefaultSettingsFile"
+                Remove-Item -path "$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$EmptySettingsFile" -Force
             }
         }
     }
 }
 
 ################################# Script end here ###################################
-. "$GlobalSettingsPath\$SCRIPTSFolder\Finish.ps1"
+. "$($Global:gsGlobalSettingsPath)\$($Global:gsSCRIPTSFolder)\Finish.ps1"
