@@ -3,7 +3,7 @@
 
 ######################### no replacement ########################
 [array]  $global:FoldersToIgnoreName = @(".vscode")  
-[string] $Global:ModulePath          = "C:\Program Files\WindowsPowerShell\Modules"
+[string] $Global:ModulePath          = "C:\program files\powershell\7\Modules"
 [string] $Global:GlobalSettingsURL   = "https://github.com/Alex-0293/GlobalSettings"
 [string] $Global:AlexKUtilsModuleURL = "https://github.com/Alex-0293/PS-Modules"
 [array]  $Global:SearchProjectsPath = @($Global:gsProjectsFolderPath, $ModulePath, $Global:gsProjectServicesFolderPath, $Global:gsOtherProjectsFolderPath)  

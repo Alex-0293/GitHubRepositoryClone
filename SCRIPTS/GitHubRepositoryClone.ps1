@@ -1,4 +1,4 @@
-<#
+﻿<#
     .NOTES
         AUTHOR AlexK (1928311@tuta.io)
         DATE   25.05.2020
@@ -107,10 +107,10 @@ if ($Answer) {
             Add-ToLog -Message "Cloning repository [$($item.name)]." -Display -Status "Info" -logFilePath $Global:gsScriptLogFilePath
             Set-Location $($Global:gsProjectsFolderPath)
             & git.exe clone $item.clone_url
-            if ( Test-Path "$($($Global:gsProjectsFolderPath))\$($item.name)\$Global:gsSETTINGSFolder\$EmptySettingsFile") {
-                Add-ToLog -Message "Copying empty settings file [$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsEmptySettingsFile)] to [$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsDefaultSettingsFile)]." -Display -Status "Info" -logFilePath $Global:gsScriptLogFilePath
-                Copy-Item -path "$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$EmptySettingsFile" -Destination "$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$DefaultSettingsFile"
-                Remove-Item -path "$($($Global:gsProjectsFolderPath))\$($item.name)\$($Global:gsSETTINGSFolder)\$EmptySettingsFile" -Force
+            if ( Test-Path "$($($Global:gsProjectsFolderPath))\$($item.name)\$Global:gsSETTINGSFolder\$($Global:gsEmptySettingsFile)") {
+                Add-ToLog -Message "Copying empty settings file [$($Global:gsProjectsFolderPath)\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsEmptySettingsFile)] to [$($Global:gsProjectsFolderPath)\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsDefaultSettingsFile)]." -Display -Status "Info" -logFilePath $Global:gsScriptLogFilePath
+                Copy-Item -path "$($Global:gsProjectsFolderPath)\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsEmptySettingsFile)" -Destination "$($Global:gsProjectsFolderPath)\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsDefaultSettingsFile)"
+                Remove-Item -path "$($Global:gsProjectsFolderPath)\$($item.name)\$($Global:gsSETTINGSFolder)\$($Global:gsEmptySettingsFile)" -Force
             }
         }
     }
