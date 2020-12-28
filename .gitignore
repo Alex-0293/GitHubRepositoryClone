@@ -1,7 +1,4 @@
-ACL/Access.csv
-ACL/Owner.csv
-ACL/Roles.csv
+ACL/*
 SETTINGS/Settings.ps1
-LOGS/Errors.log
-LOGS/GitProjectClone.log
-LOGS/GitHubRepositoryClone.log
+LOGS/*
+TESTS/LOGS/*
